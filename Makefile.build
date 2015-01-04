@@ -1,0 +1,50 @@
+-include ../../Rules.make
+
+ENV_SETUP ?= ../../linux-devkit/environment-setup
+DESTDIR ?= 
+FILENAME ?= QtTemplate
+
+
+all: release
+
+.PHONY: qmake
+qmake : QtTemplate.pro
+	@. ${ENV_SETUP}; \
+	qmake2 CONFIG+=release ${FILENAME}.pro
+
+qmake_debug : QtTemplate.pro
+	@. ${ENV_SETUP}; \
+	qmake2 CONFIG+=debug ${FILENAME}.pro
+
+debug : qmake_debug
+	@. ${ENV_SETUP}; \
+	make
+
+release : qmake
+	@. ${ENV_SETUP}; \
+	make
+
+clean : qmake
+	@. ${ENV_SETUP}; \
+	make distclean
+
+install: release
+	@if [ ! -d $(DESTDIR) ] ; then \
+		echo "The extracted target filesystem directory doesn't exist."; \
+		echo "Please run setup.sh in the SDK's root directory and then try again."; \
+		exit 1; \
+	fi
+	@install -d ${DESTDIR}/usr/bin
+	@install ${FILENAME} ${DESTDIR}/usr/bin/${FILENAME}; \
+	echo "${FILENAME} release version installed."
+
+install_debug: debug
+	@if [ ! -d $(DESTDIR) ] ; then \
+		echo "The extracted target filesystem directory doesn't exist."; \
+		echo "Please run setup.sh in the SDK's root directory and then try again."; \
+		exit 1; \
+	fi
+	@install -d ${DESTDIR}/usr/bin
+	@install QtTemplate ${DESTDIR}/usr/bin/${FILENAME}; \
+	echo "${FILENAME} debug version installed."
+
